@@ -1,0 +1,94 @@
+﻿@model ReniecRamos.Models.ViewModels.CitizenCreateViewModel
+
+<div class="container mt-4">
+    <div class="card shadow border-0">
+        <div class="card-header bg-warning py-3">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-pencil-square"></i> Actualizar Información de Ciudadano</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="Edit" enctype="multipart/form-data" method="post">
+                <div asp-validation-summary="All" class="text-danger"></div>
+                
+                <!-- IMPORTANTE: El ID es necesario para que el Controller sepa a quién editar -->
+                <input type="hidden" name="id" value="@ViewContext.RouteData.Values["id"]" />
+                <input type="hidden" asp-for="BirthUbigeoId" />
+                <input type="hidden" asp-for="Gender" />
+                <input type="hidden" asp-for="BirthDate" />
+                <div class="row">
+                    <!-- COLUMNA IZQUIERDA: FORMULARIO -->
+                    <div class="col-md-8">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold small">N° de Documento</label>
+                                <input asp-for="DocumentNumber" class="form-control form-control-sm" />
+                                <span asp-validation-for="DocumentNumber" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold small">Estado Civil</label>
+                                <select asp-for="CivilStatusId" class="form-select form-select-sm" asp-items="ViewBag.CivilStatus"></select>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold small">Nombres</label>
+                                <input asp-for="FirstName" class="form-control form-control-sm" />
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold small">Ap. Paterno</label>
+                                <input asp-for="FirstLastName" class="form-control form-control-sm" />
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold small">Ap. Materno</label>
+                                <input asp-for="SecondLastName" class="form-control form-control-sm" />
+                            </div>
+
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label fw-bold small">Dirección Actual</label>
+                                <input asp-for="CurrentAddress" class="form-control form-control-sm" />
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold small">Ubigeo Residencia</label>
+                                <select asp-for="CurrentUbigeoId" class="form-select form-select-sm" asp-items="ViewBag.Ubigeos"></select>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold small">Nueva Foto (Opcional)</label>
+                                <input asp-for="PhotoFile" type="file" class="form-control form-control-sm" accept="image/*" />
+                                <small class="text-muted" style="font-size: 0.7rem;">Deje vacío para mantener la foto actual.</small>
+                            </div>
+                           
+
+                        
+                        </div>
+                    </div>
+
+                    <!-- COLUMNA DERECHA: PREVISUALIZACIÓN -->
+                    <div class="col-md-4 text-center border-start">
+                        <div class="p-3 bg-light rounded">
+                            <label class="d-block mb-2 fw-bold small">Foto Actual</label>
+                            @if (!string.IsNullOrEmpty(ViewBag.CurrentPhoto))
+                            {
+                                <img src="~/uploads/citizens/@ViewBag.CurrentPhoto" class="img-thumbnail shadow-sm" style="width:180px; height:220px; object-fit:cover;" />
+                            }
+                            else
+                            {
+                                <div class="py-5 border bg-white text-muted">Sin Foto</div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 border-top pt-3 text-end">
+                    <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Regresar</a>
+                    <button type="submit" class="btn btn-warning btn-sm px-4 fw-bold">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

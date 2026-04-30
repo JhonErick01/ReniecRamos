@@ -1,0 +1,104 @@
+﻿@model ReniecRamos.Models.ViewModels.CitizenCreateViewModel
+
+@{
+    ViewData["Title"] = "Nuevo Ciudadano";
+}
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Registro de Nuevo Ciudadano</h4>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" enctype="multipart/form-data" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="row">
+                    <!-- Sección de Identidad -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">Tipo de Documento</label>
+                        <select asp-for="DocumentTypeId" class="form-select" asp-items="ViewBag.DocumentTypes">
+                            <option value="">-- Seleccione --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">N° de Documento</label>
+                        <input asp-for="DocumentNumber" class="form-control" placeholder="Ej: 70123456" />
+                        <span asp-validation-for="DocumentNumber" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">Género</label>
+                        <select asp-for="Gender" class="form-select">
+                            <option value="M">Masculino</option>
+                            <option value="F">Femenino</option>
+                        </select>
+                    </div>
+
+                    <!-- Nombres y Apellidos -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">Nombres</label>
+                        <input asp-for="FirstName" class="form-control" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">Apellido Paterno</label>
+                        <input asp-for="FirstLastName" class="form-control" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">Apellido Materno</label>
+                        <input asp-for="SecondLastName" class="form-control" />
+                    </div>
+
+                    <!-- Datos Civiles -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Fecha de Nacimiento</label>
+                        <input asp-for="BirthDate" type="date" class="form-control" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Estado Civil</label>
+                        <select asp-for="CivilStatusId" class="form-select" asp-items="ViewBag.CivilStatus">
+                            <option value="">-- Seleccione --</option>
+                        </select>
+                    </div>
+
+                    <!-- Ubicaciones -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Ubigeo de Nacimiento</label>
+                        <select asp-for="BirthUbigeoId" class="form-select" asp-items="ViewBag.Ubigeos">
+                            <option value="">-- Seleccione lugar --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Ubigeo de Residencia Actual</label>
+                        <select asp-for="CurrentUbigeoId" class="form-select" asp-items="ViewBag.Ubigeos">
+                            <option value="">-- Seleccione lugar --</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label fw-bold">Dirección Actual</label>
+                        <input asp-for="CurrentAddress" class="form-control" placeholder="Av. Siempre Viva 123..." />
+                    </div>
+
+                    <!-- Fotografía -->
+                    <div class="col-md-12 mb-4">
+                        <label class="form-label fw-bold">Foto del Ciudadano</label>
+                        <input asp-for="PhotoFile" type="file" class="form-control" accept="image/*" />
+                        <small class="text-muted">Formatos permitidos: JPG, PNG.</small>
+                    </div>
+                </div>
+
+                <hr />
+                <div class="d-flex justify-content-end">
+                    <a asp-action="Index" class="btn btn-secondary me-2">Cancelar</a>
+                    <button type="submit" class="btn btn-success px-5">Guardar Ciudadano</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

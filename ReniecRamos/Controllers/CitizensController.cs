@@ -21,40 +21,43 @@ namespace ReniecRamos.Controllers
             _fileStorage = fileStorage;
         }
 
-        // 1. LISTADO DE CIUDADANOS
-        public async Task<IActionResult> Index()
+       
+        public async Task<IActionResult> Index(string searchQuery)
         {
-            var citizens = await _context.Citizens
+            var query = _context.Citizens
                 .Include(c => c.DocumentType)
                 .Include(c => c.CivilStatus)
                 .Include(c => c.ResidencePlace)
-                .ToListAsync();
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchQuery))
+            {
+                query = query.Where(c => c.DocumentNumber.Contains(searchQuery));
+                ViewBag.SearchQuery = searchQuery;
+            }
+
+            var citizens = await query.ToListAsync();
             return View(citizens);
         }
 
-        // 2. VISTA PARA CREAR (GET)
         public IActionResult Create()
         {
-            // Llenamos los SelectList para los combos de la vista
             CargarCombos();
             return View();
         }
 
-        // 3. PROCESAR CREACIÓN (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CitizenCreateViewModel model)
         {
             if (ModelState.IsValid)
             {
-                // Manejo de la Imagen
-                string nombreImagen = "default.png"; // Imagen por defecto
+                string nombreImagen = "default.png"; 
                 if (model.PhotoFile != null)
                 {
                     nombreImagen = await _fileStorage.SaveFileAsync(model.PhotoFile, "citizens");
                 }
 
-                // Mapeo del ViewModel a la Entidad
                 var citizen = new Citizen
                 {
                     DocumentNumber = model.DocumentNumber,
@@ -83,13 +86,11 @@ namespace ReniecRamos.Controllers
             return View(model);
         }
 
-        // Método auxiliar para no repetir carga de combos
         private void CargarCombos()
         {
             ViewBag.DocumentTypes = new SelectList(_context.DocumentTypes, "DocumentTypeId", "Description");
             ViewBag.CivilStatus = new SelectList(_context.CivilStatuses, "CivilStatusId", "Description");
 
-            // Para Ubigeos, mostramos "Departamento - Provincia - Distrito"
             var ubigeos = _context.Ubigeos.Select(u => new
             {
                 Id = u.UbigeoId,
@@ -99,7 +100,6 @@ namespace ReniecRamos.Controllers
             ViewBag.Ubigeos = new SelectList(ubigeos, "Id", "NombreCompleto");
         }
 
-        // GET: Citizens/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
@@ -116,7 +116,6 @@ namespace ReniecRamos.Controllers
             return View(citizen);
         }
 
-        // GET: Citizens/Edit/5
         [HttpGet]
         public async Task<IActionResult> Edit(int? id)
         {
@@ -127,12 +126,10 @@ namespace ReniecRamos.Controllers
 
             var vm = new CitizenCreateViewModel
             {
-                // Estos son los que enviaremos como HIDDEN
                 Gender = citizen.Gender,
                 BirthUbigeoId = citizen.BirthUbigeoId,
-                BirthDate = citizen.BirthDate, // También lo incluimos
+                BirthDate = citizen.BirthDate, 
 
-                // Los que el usuario sí puede ver/editar
                 DocumentNumber = citizen.DocumentNumber,
                 FirstName = citizen.FirstName,
                 FirstLastName = citizen.FirstLastName,
@@ -147,62 +144,12 @@ namespace ReniecRamos.Controllers
             CargarCombos();
             return View(vm);
         }
-        /* [HttpPost]
-         [ValidateAntiForgeryToken]
-         public async Task<IActionResult> Edit(int id, CitizenCreateViewModel model)
-         {
-             // 1. Buscamos el ciudadano real en la base de datos
-             var citizenDb = await _context.Citizens.FindAsync(id);
-             if (citizenDb == null) return NotFound();
-
-             // 2. Quitamos la validación de ImagePath del ModelState 
-             // porque el ViewModel no lo tiene y eso causa que IsValid sea false
-             ModelState.Remove("ImagePath");
-
-             if (ModelState.IsValid)
-             {
-                 try
-                 {
-                     // 3. Lógica de la foto: ¿Subió una nueva?
-                     if (model.PhotoFile != null && model.PhotoFile.Length > 0)
-                     {
-                         // Guardamos el nuevo archivo y actualizamos la propiedad ImagePath
-                         citizenDb.ImagePath = await _fileStorage.SaveFileAsync(model.PhotoFile, "citizens");
-                     }
-                     // Si model.PhotoFile es nulo, citizenDb.ImagePath conserva su valor anterior automáticamente
-
-                     // 4. Actualizamos el resto de campos manualmente
-                     citizenDb.DocumentNumber = model.DocumentNumber;
-                     citizenDb.FirstName = model.FirstName;
-                     citizenDb.FirstLastName = model.FirstLastName;
-                     citizenDb.SecondLastName = model.SecondLastName;
-                     citizenDb.CivilStatusId = model.CivilStatusId;
-                     citizenDb.CurrentAddress = model.CurrentAddress;
-                     citizenDb.CurrentUbigeoId = model.CurrentUbigeoId;
-                     citizenDb.BirthDate = model.BirthDate;
-                     citizenDb.Gender = model.Gender;
-
-                     _context.Update(citizenDb);
-                     await _context.SaveChangesAsync();
-                     return RedirectToAction(nameof(Index));
-                 }
-                 catch (Exception ex)
-                 {
-                     ModelState.AddModelError("", "Error al guardar: " + ex.Message);
-                 }
-             }
-
-             // Si algo falló, recargamos combos y volvemos a la vista
-             ViewBag.CurrentPhoto = citizenDb.ImagePath; // Importante para la previsualización
-             CargarCombos();
-             return View(model);
-         } */
+      
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, CitizenCreateViewModel model)
         {
-            // 1. Buscar el ciudadano original
             var citizenDb = await _context.Citizens.FindAsync(id);
             if (citizenDb == null) return NotFound();
 
@@ -220,13 +167,11 @@ namespace ReniecRamos.Controllers
                 
                 try
                 {
-                    // 3. Procesar Nueva Foto (Solo si el usuario seleccionó una)
                     if (model.PhotoFile != null && model.PhotoFile.Length > 0)
                     {
                         citizenDb.ImagePath = await _fileStorage.SaveFileAsync(model.PhotoFile, "citizens");
                     }
 
-                    // 4. Actualizar datos básicos
                     citizenDb.DocumentNumber = model.DocumentNumber;
                     citizenDb.FirstName = model.FirstName;
                     citizenDb.FirstLastName = model.FirstLastName;
@@ -240,7 +185,6 @@ namespace ReniecRamos.Controllers
                     _context.Update(citizenDb);
                     await _context.SaveChangesAsync();
 
-                    // 5. REDIRECCIÓN: Si todo sale bien, te manda al Index
                     return RedirectToAction(nameof(Index));
                 }
                 catch (Exception ex)
@@ -249,8 +193,7 @@ namespace ReniecRamos.Controllers
                 }
             }
 
-            // --- SI LLEGAMOS AQUÍ, ES PORQUE ALGO FALLÓ ---
-            // Recargamos los datos para que la vista no se rompa
+            
             ViewBag.CurrentPhoto = citizenDb.ImagePath;
             CargarCombos();
             return View(model);

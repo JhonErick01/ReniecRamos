@@ -5,39 +5,58 @@
 }
 
 <style>
-    /* Estilos para que se vea más profesional y compacto */
-    .table {
-        font-size: 0.85rem; /* Letra más pequeña */
-        vertical-align: middle;
-    }
-    .img-citizen {
-        width: 40px;
-        height: 40px;
-        object-fit: cover;
-        border-radius: 50%; /* Foto circular */
-        border: 1px solid #dee2e6;
-    }
-    .badge {
-        font-weight: 500;
-        padding: 0.4em 0.6em;
-    }
-    .btn-action {
-        padding: 0.25rem 0.5rem;
-        font-size: 0.75rem;
+    .table { font-size: 0.85rem; vertical-align: middle; }
+    .img-citizen { width: 40px; height: 40px; object-fit: cover; border-radius: 50%; border: 1px solid #dee2e6; }
+    .badge { font-weight: 500; padding: 0.4em 0.6em; }
+    .btn-action { 
+        padding: 0.3rem 0.6rem; 
+        font-size: 0.75rem; 
+        display: inline-flex; 
+        align-items: center; 
     }
 </style>
 
 <div class="container-fluid px-4 mt-4">
     <div class="card shadow-sm">
-        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 text-primary fw-bold">Registro Nacional de Ciudadanos</h5>
-            @if (User.IsInRole("Administrator"))
-            {
-                <a asp-action="Create" class="btn btn-primary btn-sm">
-                    <i class="bi bi-plus-lg"></i> Nuevo Registro
-                </a>
-            }
+        <div class="card-header bg-white py-3">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <h5 class="mb-0 text-primary fw-bold">
+                        <i class="bi bi-card-checklist"></i> Registro de Ciudadanos
+                    </h5>
+                </div>
+                
+                <div class="col-md-5">
+                    <form asp-action="Index" method="get">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="bi bi-search text-muted"></i>
+                            </span>
+                            <input type="text" name="searchQuery" class="form-control border-start-0" 
+                                   placeholder="Buscar por N° de Documento..." value="@ViewBag.SearchQuery" />
+                            
+                            @if (!string.IsNullOrEmpty(ViewBag.SearchQuery))
+                            {
+                                <a asp-action="Index" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-lg"></i>
+                                </a>
+                            }
+                            <button class="btn btn-primary px-3" type="submit">Buscar</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="col-md-3 text-end">
+                    @if (User.IsInRole("Administrator"))
+                    {
+                        <a asp-action="Create" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-lg"></i> Nuevo Registro
+                        </a>
+                    }
+                </div>
+            </div>
         </div>
+
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover mb-0">
@@ -53,28 +72,28 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center py-4 text-muted">
+                                    No se encontraron resultados para "@ViewBag.SearchQuery"
+                                </td>
+                            </tr>
+                        }
                         @foreach (var item in Model)
                         {
                             <tr>
                                 <td class="ps-3">
-                                    @if (!string.IsNullOrEmpty(item.ImagePath))
-                                    {
-                                        <img src="~/uploads/citizens/@item.ImagePath" class="img-citizen" alt="Foto" />
-                                    }
-                                    else
-                                    {
-                                        <img src="~/img/default-user.png" class="img-citizen" alt="Sin foto" />
-                                    }
+                                    <img src="~/uploads/citizens/@(string.IsNullOrEmpty(item.ImagePath) ? "default.png" : item.ImagePath)" 
+                                         class="img-citizen" onerror="this.src='/img/default-user.png'" />
                                 </td>
                                 <td class="fw-bold">@item.DocumentNumber</td>
                                 <td>
-                                    <span class="text-uppercase">@item.FirstLastName @item.SecondLastName</span>,
-                                    <span class="text-capitalize text-muted">@item.FirstName</span>
+                                    <span class="text-uppercase fw-semibold">@item.FirstLastName @item.SecondLastName</span>, 
+                                    <span class="text-muted">@item.FirstName</span>
                                 </td>
                                 <td>@item.CivilStatus?.Description</td>
-                                <td>
-                                    <small class="text-muted">@item.ResidencePlace?.District</small>
-                                </td>
+                                <td><small>@item.ResidencePlace?.District</small></td>
                                 <td class="text-center">
                                     <span class="badge rounded-pill @(item.IsActive ? "bg-success" : "bg-secondary")">
                                         @(item.IsActive ? "ACTIVO" : "INACTIVO")
@@ -82,10 +101,14 @@
                                 </td>
                                 <td class="text-end pe-3">
                                     <div class="btn-group">
-                                        <a asp-action="Details" asp-route-id="@item.CitizenId" class="btn btn-outline-info btn-action">Ver</a>
+                                        <a asp-action="Details" asp-route-id="@item.CitizenId" class="btn btn-outline-info btn-action">
+                                            <i class="bi bi-eye me-1"></i> Ver
+                                        </a>
                                         @if (User.IsInRole("Administrator"))
                                         {
-                                            <a asp-action="Edit" asp-route-id="@item.CitizenId" class="btn btn-outline-warning btn-action">Editar</a>
+                                            <a asp-action="Edit" asp-route-id="@item.CitizenId" class="btn btn-outline-warning btn-action ms-1">
+                                                <i class="bi bi-pencil me-1"></i> Editar
+                                            </a>
                                         }
                                     </div>
                                 </td>
@@ -96,7 +119,7 @@
             </div>
         </div>
         <div class="card-footer bg-white py-2">
-            <small class="text-muted">Total de registros: @Model.Count()</small>
+            <small class="text-muted">Total: @Model.Count() registros</small>
         </div>
     </div>
 </div>

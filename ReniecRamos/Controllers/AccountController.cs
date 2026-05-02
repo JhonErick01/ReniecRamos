@@ -102,8 +102,7 @@ namespace ReniecRamos.Controllers
                 _context.Users.Add(newUser);
                 await _context.SaveChangesAsync();
 
-                // Autologin después de registrar (opcional)
-                // O simplemente redirigir al login con un mensaje de éxito
+               
                 return RedirectToAction("Login");
             }
             return View("Login");
